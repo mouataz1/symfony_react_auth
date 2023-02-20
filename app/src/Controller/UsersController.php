@@ -2,13 +2,17 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UsersController extends AbstractController
 {
@@ -30,14 +34,29 @@ class UsersController extends AbstractController
         ]);
     }
 
-    #[Route('/api/register', name: 'app_register_users')]
-    public function register(Request $request): JsonResponse
+    #[Route('/api/register', name: 'app_register_users', methods: ['POST']) ]
+    public function register(Request $request, ValidatorInterface $validator, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
     {
-        $jsonData = json_decode($request->getContent());
-        $user = $this->userRepository->create($jsonData);
-
-        return new JsonResponse([
-            'user'=>$this->serializer->serialize($user, 'json')
-        ]);
+        //$jsonData = json_decode($request->getContent());
+        //$user = $this->userRepository->create($jsonData);
+        $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+        $errors = $validator->validate($user);
+        if($errors->count() > 0){
+            return new JsonResponse(
+                $serializer->serialize($errors,'json'), 
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true
+            );
+        }
+        $em->persist($user);
+        $em->flush();
+        $user = $serializer->serialize($user, 'json', ['groups' => 'getUser']);
+        return new JsonResponse(
+            $user,
+                Response::HTTP_OK,
+                [],
+                true
+        );
     }
 }

@@ -6,17 +6,26 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
+#[UniqueEntity('email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getUser"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\Email(message: "The email {{ value }} is not a valid email.")]
+    #[Assert\NotBlank(message: "Email should not be blank !")]
+    #[Assert\Length(min:5, max:180, minMessage: "Email Length should not be less than {{ limit }}", maxMessage: "Email Length should not be greater than {{ limit }}")]
+    #[Groups(["getUser"])]
     private ?string $email = null;
 
     #[ORM\Column]
