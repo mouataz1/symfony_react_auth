@@ -19,6 +19,11 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            
+    App\EventListener\JwtAuthenticationFailureListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_failure, method: onJwtAuthenticationFailure }
+
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

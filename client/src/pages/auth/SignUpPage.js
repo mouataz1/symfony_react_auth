@@ -16,15 +16,18 @@ export  const SignUpPage = ()=>{
     const history = useHistory('');
 
     const onSignUp = async ()=>{
-        const response = await axios.post('http://127.0.0.1:8000/api/register', {
+        try {
+            const response = await axios.post('http://127.0.0.1:8000/api/register', {
             email: emailValue,
             password:passwordValue,
-        });
-         if(response.status === 200){
+            });
             history.push('/login');
-         }else{
-            setErrorMessage('something wrong try again !');
-         }
+            
+        } catch (error) {
+            //console.log(error.response.data.violations[0].title);
+            setErrorMessage(error.response.data.violations[0].title);
+        }
+        
     }
 
     return (

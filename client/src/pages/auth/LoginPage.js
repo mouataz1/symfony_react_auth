@@ -15,14 +15,20 @@ export  const LoginPage = ()=>{
     const history = useHistory('');
 
     const onLogin = async () => {
-        const response = await axios.post('http://127.0.0.1:8000/api/login_check', {
-            username: emailValue,
-            password: passwordValue,
-        });
+        try {
+            const response = await axios.post('http://127.0.0.1:8000/api/login_check', {
+                username: emailValue,
+                password: passwordValue,
+            });
 
-        const {token} = response.data;
-        setToken(token);
-        history.push('/');
+            const {token} = response.data;
+            setToken(token);
+            history.push('/');
+        } catch (error) {
+           // console.log(error.response.data.message);
+            setErrorMessage(error.response.data.message);
+        }
+        
     }
 
     return (
